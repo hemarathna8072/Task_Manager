@@ -1,22 +1,23 @@
-module.exports = (app, passport) => {
-  app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-  app.get('/auth/google/callback', passport.authenticate('google', {
-    failureRedirect: '/login'
-  }), (req, res) => {
-    res.redirect('http://localhost:3000/dashboard');
-  });
+const passport = require('passport');
 
-  app.get('/auth/facebook', passport.authenticate('facebook'));
-  app.get('/auth/facebook/callback', passport.authenticate('facebook', {
-    failureRedirect: '/login'
-  }), (req, res) => {
-    res.redirect('http://localhost:3000/dashboard');
-  });
+module.exports = (app) => {
+  // Redirect user to Google for authentication
+  app.get('/auth/google',
+    passport.authenticate('google', {
+      scope: ['profile', 'email'],
+    })
+  );
 
-  app.get('/auth/github', passport.authenticate('github'));
-  app.get('/auth/github/callback', passport.authenticate('github', {
-    failureRedirect: '/login'
-  }), (req, res) => {
-    res.redirect('http://localhost:3000/dashboard');
-  });
+  // Callback URL after Google authentication
+  app.get('/auth/google/callback',
+    passport.authenticate('google', {
+      failureRedirect: '/login',
+      session: false,
+    }),
+    (req, res) => {
+      const token = req.user.token; // from Passport strategy
+      // Redirect to frontend with token
+      res.redirect(`http://localhost:3000/dashboard?token=${token}`);
+    }
+  );
 };
